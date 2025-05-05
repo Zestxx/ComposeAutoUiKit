@@ -19,6 +19,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
+
+        getByName("debug") {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            )
+        }
     }
 
     compileOptions {
@@ -46,12 +53,14 @@ repositories {
 
 publishing {
     publications {
-        create<MavenPublication>("debug") {
-            groupId = "com.zest.autouikit"
+        val releaseVersion: String by project
+        val libGroupId: String by project
+        create<MavenPublication>("release") {
+            groupId = libGroupId
             artifactId = "preview"
-            version = "0.1.0"
+            version = releaseVersion
 
-            afterEvaluate { from(components["debug"]) }
+            afterEvaluate { from(components["release"]) }
         }
     }
 }
@@ -60,5 +69,6 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     api(project(":auto-uikit-core"))
     implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation("androidx.activity:activity-compose:1.10.1")
 }
 

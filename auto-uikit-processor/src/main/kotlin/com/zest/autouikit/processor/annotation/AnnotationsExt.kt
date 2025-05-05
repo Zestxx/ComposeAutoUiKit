@@ -17,6 +17,6 @@ fun KSDeclaration.findAnnotation(kClass: KClass<*>): KSAnnotation? {
     }
 }
 
-fun <T> KSAnnotation.getArgumentValue(argumentName: String): T {
-    return arguments.find { it.name?.asString() == argumentName }?.value as T
+fun <T> KSAnnotation.getArgumentValue(argumentName: String): T? {
+    return arguments.find { it.name?.asString() == argumentName }?.value as? T
 }

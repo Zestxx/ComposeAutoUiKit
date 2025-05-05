@@ -2,12 +2,15 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.plugin.compose")
     kotlin("android")
-    id("com.google.devtools.ksp") version "2.1.20-1.0.32"
+    id("com.google.devtools.ksp")
 
 }
 
 android {
     compileSdk = 35
+    defaultConfig {
+        minSdk = 23
+    }
     namespace = "com.zest.sample_uikit"
 
     buildTypes {
@@ -42,7 +45,7 @@ dependencies {
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
-    implementation("androidx.compose.material:material:$composeVersion")
+    implementation("androidx.compose.material3:material3-android:1.3.2")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation(project(":auto-uikit"))

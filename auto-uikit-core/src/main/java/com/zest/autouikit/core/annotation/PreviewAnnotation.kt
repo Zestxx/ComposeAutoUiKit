@@ -2,7 +2,7 @@ package com.zest.autouikit.core.annotation
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
-annotation class DesignComponent(val group: String = "")
+annotation class DesignComponent(val name: String = "", val group: String = "")
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)

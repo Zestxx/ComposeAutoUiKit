@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     `maven-publish`
-    id("com.google.devtools.ksp") version "2.1.20-1.0.32"
+    id("com.google.devtools.ksp")
 }
 
 repositories {
@@ -15,10 +15,12 @@ sourceSets.main {
 
 publishing {
     publications {
+        val releaseVersion: String by project
+        val libGroupId: String by project
         create<MavenPublication>("maven") {
-            groupId = "com.zest.autouikit"
+            groupId = libGroupId
             artifactId = "processor"
-            version = "0.1.0"
+            version = releaseVersion
 
             from(components["java"])
         }
@@ -28,5 +30,5 @@ publishing {
 dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:2.1.20-1.0.32")
     implementation("com.squareup:kotlinpoet-ksp:1.12.0")
-    implementation(project(":auto-uikit-core"))
+    api(project(":auto-uikit-core"))
 }

@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.zest.autouikit.UiPreview
+import com.zest.autouikit.AutoUiKit
 
 @Composable
 internal fun PreviewNavHost(modifier: Modifier = Modifier) {
@@ -16,7 +16,7 @@ internal fun PreviewNavHost(modifier: Modifier = Modifier) {
     NavHost(navController, startDestination = "groups", modifier = modifier) {
         composable("groups") {
             GroupsScreen(
-                groups = UiPreview.previewModel?.previewGroups.orEmpty(),
+                groups = AutoUiKit.previewModel?.previewGroups.orEmpty(),
                 onSelect = {
                     navController.navigate("components/${it.name}")
                 }
