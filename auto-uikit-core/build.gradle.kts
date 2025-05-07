@@ -27,11 +27,9 @@ publishing {
 
 val composeVersion = "1.8.0"
 
-
 dependencies {
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     api("androidx.compose.ui:ui:$composeVersion")
-    api("androidx.compose.foundation:foundation:$composeVersion")
     api("androidx.compose.material:material:$composeVersion")
     api("androidx.compose.runtime:runtime:$composeVersion")
     api("androidx.compose.ui:ui-tooling-preview-android:$composeVersion")
