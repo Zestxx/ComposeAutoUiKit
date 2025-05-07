@@ -5,7 +5,7 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSName
 import com.google.devtools.ksp.symbol.KSType
-import com.zest.autouikit.core.annotation.DesignComponent
+import com.zest.autouikit.processor.annotation.DesignComponent
 import com.zest.autouikit.core.models.PreviewColor
 import com.zest.autouikit.core.models.PreviewComponent
 import com.zest.autouikit.core.models.PreviewGroup
