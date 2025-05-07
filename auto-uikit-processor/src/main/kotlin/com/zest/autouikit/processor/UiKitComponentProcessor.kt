@@ -5,7 +5,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
-import com.zest.autouikit.core.annotation.DesignComponent
+import com.zest.autouikit.processor.annotation.DesignComponent
 import com.zest.autouikit.processor.annotation.findFunctionsWithAnnotation
 import com.zest.autouikit.processor.generator.PreviewModelGenerator
 
