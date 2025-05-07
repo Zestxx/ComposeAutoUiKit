@@ -4,12 +4,13 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.zest.autouikit.core.models.PreviewModel
+import com.zest.autouikit.ui.AutoUiKitActivity
 import com.zest.autouikit.ui.PreviewNavHost
 import com.zest.autouikit.ui.SerializationErrorScreen
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
-object UiPreview {
+object AutoUiKit {
     internal var previewModel: PreviewModel? = null
     private var isModelSerialized: Boolean? = null
 
@@ -23,6 +24,7 @@ object UiPreview {
             previewModel = Json.decodeFromString<PreviewModel>(jsonModel)
             isModelSerialized = true
         } catch (e: SerializationException) {
+            e.printStackTrace()
             isModelSerialized = false
         }
     }
@@ -34,5 +36,9 @@ object UiPreview {
         } else {
             SerializationErrorScreen()
         }
+    }
+
+    fun startPreviewActivity(context: Context) {
+        context.startActivity(AutoUiKitActivity.getInstance(context))
     }
 }

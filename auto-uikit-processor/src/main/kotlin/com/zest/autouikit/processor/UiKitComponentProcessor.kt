@@ -7,7 +7,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
 import com.zest.autouikit.core.annotation.DesignComponent
 import com.zest.autouikit.processor.annotation.findFunctionsWithAnnotation
-import com.zest.autouikit.processor.generator.JsonPreviewModelGenerator
+import com.zest.autouikit.processor.generator.PreviewModelGenerator
 
 
 internal class UiKitComponentProcessor(
@@ -17,7 +17,7 @@ internal class UiKitComponentProcessor(
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val listedFunctions = resolver.findFunctionsWithAnnotation(DesignComponent::class)
         if (!listedFunctions.iterator().hasNext()) return emptyList()
-        JsonPreviewModelGenerator(codeGenerator).generate(listedFunctions)
+        PreviewModelGenerator(codeGenerator).generate(listedFunctions)
         return listedFunctions.filterNot { it.validate() }.toList()
     }
 }

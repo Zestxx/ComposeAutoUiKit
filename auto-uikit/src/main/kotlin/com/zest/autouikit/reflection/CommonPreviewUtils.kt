@@ -1,203 +1,136 @@
 package com.zest.autouikit.reflection
 
 import androidx.compose.runtime.Composer
-import java.lang.reflect.Method
+import androidx.compose.runtime.reflect.ComposableMethod
+import androidx.compose.runtime.reflect.getDeclaredComposableMethod
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.zest.autouikit.core.models.PreviewComponent
 import java.lang.reflect.Modifier
-import kotlin.math.ceil
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 internal object CommonPreviewUtils {
 
-    /**
-     * Returns true if the [methodTypes] and [actualTypes] are compatible. This means that every
-     * `actualTypes[n]` are assignable to `methodTypes[n]`.
-     */
-    private fun compatibleTypes(
-        methodTypes: Array<Class<*>>,
-        actualTypes: Array<Class<*>>
-    ): Boolean = methodTypes.size == actualTypes.size &&
-            methodTypes.mapIndexed { index, clazz -> clazz.isAssignableFrom(actualTypes[index]) }
-                .all { it }
-
-    /**
-     * Same as [Class#getDeclaredMethod] but it accounts for compatible types so the signature does
-     * not need to exactly match. This allows finding method calls that use subclasses as parameters
-     * instead of the exact types.
-     */
-    private fun Class<*>.getDeclaredCompatibleMethod(
-        methodName: String,
-        vararg args: Class<*>
-    ): Method {
-        val actualTypes: Array<Class<*>> = arrayOf(*args)
-        return declaredMethods.firstOrNull {
-            methodName == it.name && compatibleTypes(it.parameterTypes, actualTypes)
-        } ?: throw NoSuchMethodException("$methodName not found")
-    }
-
-    private inline fun <reified T> T.dup(count: Int): Array<T> {
-        return (0..count).map { this }.toTypedArray()
-    }
-
-    /**
-     * Find the given method by name. If the method has parameters, this function will try to find
-     * the version that accepts default parameters.
-     */
-    private fun Class<*>.findComposableMethod(methodName: String, vararg args: Any?): Method {
-        val method = try {
-            // without defaults
-            val changedParams = changedParamCount(args.size, 0)
-            getDeclaredCompatibleMethod(
-                methodName,
-                *args.mapNotNull { it?.javaClass }.toTypedArray(),
-                Composer::class.java, // composer param
-                Int::class.java, // key param
-                *Int::class.java.dup(changedParams) // changed params
-            )
-        } catch (e: ReflectiveOperationException) {
-            try {
-                declaredMethods.find { it.name == methodName }
-            } catch (e: ReflectiveOperationException) {
-                null
-            }
-        } ?: throw NoSuchMethodException("$name.$methodName")
-
-        return method
-    }
-
-    /**
-     * Returns the default value for the [Class] type. This will be 0 for numeric types, false for
-     * boolean, '0' for char and null for object references.
-     */
-    private fun Class<*>.getDefaultValue(): Any? = when (name) {
-        "int" -> 0
-        "short" -> 0.toShort()
-        "byte" -> 0.toByte()
-        "long" -> 0.toLong()
-        "double" -> 0.toDouble()
-        "float" -> 0.toFloat()
-        "boolean" -> false
-        "char" -> '0'
-        else -> null
-    }
-
-    /**
-     * Calls the method on the given [instance]. If the method accepts default values, this function
-     * will call it with the correct options set.
-     */
-    private fun Method.invokeComposableMethod(
-        instance: Any?,
-        composer: Composer,
-        vararg args: Any?
-    ): Any? {
-        val composerIndex = parameterTypes.indexOfLast { it == Composer::class.java }
-        val thisParams = if (instance != null) 1 else 0
-        val changedParams = changedParamCount(composerIndex, thisParams)
-        val totalParamsWithoutDefaults = composerIndex +
-                1 + // composer
-                changedParams
-        val totalParams = parameterTypes.size
-        val isDefault = totalParams != totalParamsWithoutDefaults
-        val defaultParams = if (isDefault)
-            defaultParamCount(composerIndex)
-        else
-            0
-
-        check(
-            composerIndex +
-                    1 + // composer
-                    changedParams +
-                    defaultParams ==
-                    totalParams
-        )
-
-        val changedStartIndex = composerIndex + 1
-        val defaultStartIndex = changedStartIndex + changedParams
-
-        val arguments = Array(totalParams) { idx ->
-            when (idx) {
-                // pass in "empty" value for all real parameters since we will be using defaults.
-                in 0 until composerIndex -> args.getOrElse(idx) {
-                    parameterTypes[idx].getDefaultValue()
-                }
-                // the composer is the first synthetic parameter
-                composerIndex -> composer
-                // since this is the root we don't need to be anything unique. 0 should suffice.
-                // changed parameters should be 0 to indicate "uncertain"
-                in changedStartIndex until defaultStartIndex -> 0
-                // Default values mask, all parameters set to use defaults
-                in defaultStartIndex until totalParams -> 0b111111111111111111111.toInt()
-                else -> error("Unexpected index")
-            }
-        }
-        return invoke(instance, *arguments)
-    }
-
-    private const val SLOTS_PER_INT = 15
-    private const val BITS_PER_INT = 31
-
-    private fun changedParamCount(realValueParams: Int, thisParams: Int): Int {
-        if (realValueParams == 0) return 1
-        val totalParams = realValueParams + thisParams
-        return ceil(
-            totalParams.toDouble() / SLOTS_PER_INT.toDouble()
-        ).toInt()
-    }
-
-    private fun defaultParamCount(realValueParams: Int): Int {
-        return ceil(
-            realValueParams.toDouble() / BITS_PER_INT.toDouble()
-        ).toInt()
-    }
-
-    /**
-     * Invokes the given [methodName] belonging to the given [className] via reflection. The
-     * [methodName] is expected to be a Composable function.
-     * This method [args] will be forwarded to the Composable function.
-     */
     fun invokeComposableViaReflection(
-        className: String,
-        methodName: String,
+        composableMethod: ComposableMethod,
         composer: Composer,
-        vararg args: Any?
+        argument: Any? = null
     ) {
         try {
-            val composableClass = Class.forName(className)
-
-            val method = composableClass.findComposableMethod(methodName, *args)
-            method.isAccessible = true
-
-            if (Modifier.isStatic(method.modifiers)) {
-                // This is a top level or static method
-                method.invokeComposableMethod(null, composer, *args)
+            composableMethod.asMethod().isAccessible = true
+            if (Modifier.isStatic(composableMethod.asMethod().modifiers)) {
+                composableMethod.invoke(composer, null, argument)
             } else {
-                // The method is part of a class or object
-                val instance = getInstance(composableClass)
-                method.invokeComposableMethod(instance, composer, *args)
+                val instance = getInstance(composableMethod.asMethod().declaringClass)
+                composableMethod.invoke(composer, instance, argument)
             }
         } catch (e: ReflectiveOperationException) {
-            throw ClassNotFoundException("Composable Method '$className.$methodName' not found", e)
+            throw ClassNotFoundException(
+                "Composable Method '${composableMethod.asMethod().name}' not found",
+                e
+            )
         }
     }
 
     private fun getInstance(composableClass: Class<*>): Any? {
-        //If the class contains an INSTANCE field, then it is an object, so we return its instance
         val objectClassField = composableClass.fields.find { it.name == "INSTANCE" }
         return if (objectClassField != null) {
             objectClassField.get(null)
         } else {
-            // We try to instantiate the class with an empty constructor.
             composableClass.getConstructor().newInstance()
         }
     }
 
-
-    fun invokeComposableViaReflection(
-        clazz: KClass<*>,
-        methodName: String,
-        composer: Composer,
-        vararg args: Any?
-    ) {
-        val className = clazz.qualifiedName!!
-        invokeComposableViaReflection(className, methodName, composer, args)
+    fun getPreviewProviderParameters(
+        parameterProviderClass: Class<out PreviewParameterProvider<Any>>?,
+        parameterProviderIndex: Int
+    ): Array<Any?> {
+        if (parameterProviderClass != null) {
+            try {
+                val constructor =
+                    parameterProviderClass.constructors
+                        .singleOrNull { it.parameterTypes.isEmpty() }
+                        ?.apply { isAccessible = true }
+                        ?: throw IllegalArgumentException(
+                            "PreviewParameterProvider constructor can not" + " have parameters"
+                        )
+                val params = constructor.newInstance() as PreviewParameterProvider<*>
+                if (parameterProviderIndex < 0) {
+                    return params.values.toArray(params.count)
+                }
+                return listOf(params.values.elementAt(parameterProviderIndex))
+                    .map { unwrapIfInline(it) }
+                    .toTypedArray()
+            } catch (e: KotlinReflectionNotSupportedError) {
+                // kotlin-reflect runtime dependency not found. Suggest adding it.
+                throw IllegalStateException(
+                    "Deploying Compose Previews with PreviewParameterProvider " +
+                            "arguments requires adding a dependency to the kotlin-reflect library.\n" +
+                            "Consider adding 'debugImplementation " +
+                            "\"org.jetbrains.kotlin:kotlin-reflect:\$kotlin_version\"' " +
+                            "to the module's build.gradle."
+                )
+            }
+        } else {
+            return emptyArray()
+        }
     }
+
+    private fun unwrapIfInline(classToCheck: Any?): Any? {
+        // At the moment is not possible to use classToCheck::class.isValue, even if it works when
+        // running tests, is not working once trying to run the Preview instead.
+        // it would be possible in the future.
+        // see also https://kotlinlang.org/docs/inline-classes.html
+        if (classToCheck != null && classToCheck::class.java.annotations.any { it is JvmInline }) {
+            // The first primitive declared field in the class is the value wrapped
+            val fieldName: String =
+                classToCheck::class.java.declaredFields.first { it.type.isPrimitive }.name
+            return classToCheck::class
+                .java
+                .getDeclaredField(fieldName)
+                .also { it.isAccessible = true }
+                .get(classToCheck)
+        }
+        return classToCheck
+    }
+
+    private fun Sequence<Any?>.toArray(size: Int): Array<Any?> {
+        val iterator = iterator()
+        return Array(size) { iterator.next() }
+    }
+}
+
+internal fun String.asPreviewProviderClass(): Class<out PreviewParameterProvider<Any>>? {
+    return Class.forName(this) as? Class<out PreviewParameterProvider<Any>>
+}
+
+internal fun Class<*>.getComposableMethod(
+    component: PreviewComponent,
+    previewParameterType: Class<*>
+): ComposableMethod? {
+    val isCollection = Collection::class.java.isAssignableFrom(previewParameterType)
+    val composableClass = this
+    val composableMethod = try {
+        composableClass.getDeclaredComposableMethod(
+            component.functionName,
+            previewParameterType
+        )
+    } catch (_: NoSuchMethodException) {
+        previewParameterType.superclass?.let { clazz ->
+            composableClass.getComposableMethod(
+                component,
+                clazz
+            )
+        }
+    }
+    return composableMethod
+}
+
+internal fun extractElementTypeFromCollection(list: Collection<Any?>): Class<*>? {
+    return list.firstOrNull()?.javaClass
+}
+
+inline fun <reified T> extractGenericElementType(): KType {
+    val type = typeOf<T>()
+    return (type.arguments.first().type ?: error("No generic arg"))
 }

@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.compose")
-    kotlin("plugin.serialization") version "2.1.20"
+    kotlin("plugin.serialization")
     `maven-publish`
 }
 
@@ -13,10 +13,12 @@ repositories {
 
 publishing {
     publications {
+        val releaseVersion: String by project
+        val libGroupId: String by project
         create<MavenPublication>("maven") {
-            groupId = "com.zest.autouikit"
+            groupId = libGroupId
             artifactId = "core"
-            version = "0.1.0"
+            version = releaseVersion
 
             from(components["java"])
         }
@@ -31,4 +33,6 @@ dependencies {
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")
     api("androidx.compose.material:material:$composeVersion")
+    api("androidx.compose.runtime:runtime:$composeVersion")
+    api("androidx.compose.ui:ui-tooling-preview-android:$composeVersion")
 }
