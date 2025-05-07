@@ -16,26 +16,26 @@ tasks.register("clean", Delete::class) {
     delete(rootProject.layout.buildDirectory)
 }
 
-subprojects {
-    apply(plugin = "maven-publish")
-    val properties = Properties().apply {
-        rootProject.file("local.properties").reader().use(::load)
-    }
-
-    val gitHubPackageKey: String = properties["gitHubPackageKey"] as String
-    val gitHubPackageUser: String = properties["gitHubPackageUser"] as String
-    publishing {
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/Zestxx/ComposeAutoUiKit")
-                credentials {
-                    username = gitHubPackageUser
-                    password = gitHubPackageKey
-                }
-            }
-        }
-    }
+//subprojects {
+//    apply(plugin = "maven-publish")
+//    val properties = Properties().apply {
+//        rootProject.file("local.properties").reader().use(::load)
+//    }
+//
+//    val gitHubPackageKey: String = properties["gitHubPackageKey"] as String
+//    val gitHubPackageUser: String = properties["gitHubPackageUser"] as String
+//    publishing {
+//        repositories {
+//            maven {
+//                name = "GitHubPackages"
+//                url = uri("https://maven.pkg.github.com/Zestxx/ComposeAutoUiKit")
+//                credentials {
+//                    username = gitHubPackageUser
+//                    password = gitHubPackageKey
+//                }
+//            }
+//        }
+//    }
 //    val localMavenKey: String = properties["localMavenKey"] as String
 //    val localMavenUser: String = properties["localMavenUser"] as String
 //    val localMavenUrl: String = properties["localMavenUrl"] as String
@@ -52,4 +52,4 @@ subprojects {
 //            }
 //        }
 //    }
-}
+//}
