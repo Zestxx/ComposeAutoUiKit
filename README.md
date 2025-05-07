@@ -1,79 +1,100 @@
+
 # ComposeAutoUiKit
 
-Экспериментальная библиотека для автоматической генерации UiKit'а c возможностью посмотреть его на тестовой сборке.
-Как аналог библиотеки [Showkase](https://github.com/airbnb/Showkase), но с возможностью вешать аннотации на любые приватные Preview. 
-Для генерации используется связка KSP + Reflection
+**ComposeAutoUiKit** — библиотека для автоматической генерации и визуализации коллекции ваших Jetpack Compose UI-компонентов. Позволяет удобно просматривать все компоненты и цвета в тестовой сборке, группировать их и использовать приватные preview-функции.
 
-### Подключение
+## Возможности
 
-На время внутреннего тестирования библиотека публикуется во внутреннем GitLab Package Registry.
-Для начала нужно подключить дополнительный репозиторий в `build.gradle.kts`
+- Автоматический сбор всех компонентов, помеченных аннотацией.
+- Группировка компонентов по категориям.
+- Поддержка приватных preview-функций.
+- Просмотр компонентов на отдельном экране.
+- Простая интеграция в любой Compose-проект.
 
-Далее подключаем саму библиотеку:
+---  
 
-1. Подключаем KSP в модуле
+## Быстрый старт
 
-```kotlin
-plugins {
-    ...
-    id("com.google.devtools.ksp") version "1.7.10-1.0.6"
-}
+### 1. Подключение зависимостей
 
-```
-2. Подключаем зависимости
+Добавьте в `build.gradle.kts` вашего проекта:
 
-```kotlin
-dependencies {
-
-}
-```
-### Использование
-
-1. Инициализируем библиотеку.
-
-```kotlin
-UiPreview.init(applicationContext)
-```
-2. Для того чтобы компонент попал в автогенерируемый список, нужно пометить его `Preview` функцию аннотацией `@PreviewComponent`.
-
-```kotlin
-@PreviewComponent()
-@Preview
-@Composable
-private fun ButtonPreview() {
-    val text = "Button text"
-    PrimaryButton(text)
-}
-```
-Так же дополнительно компоненты можно группировать между собой.
-Для этого нужно указать название группы через `@PreviewComponent(group = "group_name)`. 
-
-```kotlin
-@PreviewComponent(group = "Buttons")
-@Preview
-@Composable
-private fun ButtonPreview() {
-    val text = "Primary Button text"
-    PrimaryButton(text)
-}
-
-@PreviewComponent(group = "Buttons")
-@Preview
-@Composable
-private fun SecondaryButtonPreview() {
-    val text = "Secondary Button text"
-    SecondaryButton(text)
-}
+```kotlin  
+plugins {  
+	id("com.google.devtools.ksp") version "$ksp_version"
+}  
 ```
 
-В таком случае все компоненты с одинаковой группой будут собираться на отдельный экран. Компоненты без группы будут собираться на экране `Undefined group`.
-**!Важно!** В данный момент библиотека не работает с компонентами в приватных `class` или `object`.
-
-3. Запускаем экран с собранными `Preview` компонентами. 
-Для исключения ошибок внутри самих компонентов, стоит обернуть вызов экрана библиотеки в тему проекта.
+В модуль в котором находятся UI компоненты добавьте `core` версию библиотеки и `processor`
 
 ```kotlin
-YourProjectTheme { 
-    UiPreview.PreviewScreen() 
+dependencies {  
+	implementation("com.zest.autouikit:core:$lib_version") 
+	ksp("com.zest.autouikit:processor:$lib_version")
+}  
+```  
+
+В модуль в котором планируется просмотр UI компонентов, добавьте в зависимости `preview` версию библиотеки
+
+```kotlin
+dependencies {  
+	implementation("com.zest.autouikit:preview:$lib_version")
+}  
+```  
+
+Если используется только один модуль, то все зависимости указываются вместе в одном модуле.
+
+### 2. Использование библиотеки
+
+Вызовите инициализацию в вашем `Application` или в `Activity` перед использованием:
+
+####  Аннотируйте компоненты
+
+Для включения компонента в автогенерируемый список используйте аннотацию `@DesignComponent`:
+
+```kotlin  
+@DesignComponent(group = "Buttons", name = "PrimaryButton")  
+@Composable  
+private fun PrimaryButtonPreview() {  
+ PrimaryButton("Primary")}  
+```  
+
+- **group** — название группы (экрана), на котором будет отображаться компонент(опционально).  .
+- **name** — отображаемое имя компонента (опционально).
+
+Можно использовать аннотацию и для публичных, и для приватных функций, а также внутри объектов и классов.
+
+#### Пример с PreviewParameterProvider:
+
+```kotlin  
+@DesignComponent(name = "UserCard")  
+@Preview  
+@Composable  
+fun UserCardPreview(  
+  @PreviewParameter(UserCardPreviewProvider::class) user: UserCardData  
+) {  
+ UserCard(user = user)  
+}  
+```    
+
+### 3. Просмотр компонентов
+
+Вызовите инициализацию в вашем `Application` или в `Activity` перед использованием:
+
+```kotlin  
+	AutoUiKit.init(context)  
+```  
+
+Запустите экран с просмотром в отдельном Activity
+```kotlin
+	AutoUiKit.startPreviewActivity(context)
+```
+
+или как отдельный `Composable` экран
+
+```kotlin
+@Composable  
+fun UiKit() {  
+    AutoUiKit.PreviewScreen()  
 }
 ```
