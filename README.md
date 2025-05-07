@@ -21,7 +21,7 @@
 
 ```kotlin  
 plugins {  
-	id("com.google.devtools.ksp") version "$ksp_version"
+    id("com.google.devtools.ksp") version "$ksp_version"
 }  
 ```
 
@@ -29,8 +29,8 @@ plugins {
 
 ```kotlin
 dependencies {  
-	implementation("com.zest.autouikit:core:$lib_version") 
-	ksp("com.zest.autouikit:processor:$lib_version")
+    implementation("com.zest.autouikit:core:$lib_version") 
+    ksp("com.zest.autouikit:processor:$lib_version")
 }  
 ```  
 
@@ -38,7 +38,7 @@ dependencies {
 
 ```kotlin
 dependencies {  
-	implementation("com.zest.autouikit:preview:$lib_version")
+    implementation("com.zest.autouikit:preview:$lib_version")
 }  
 ```  
 
@@ -56,7 +56,8 @@ dependencies {
 @DesignComponent(group = "Buttons", name = "PrimaryButton")  
 @Composable  
 private fun PrimaryButtonPreview() {  
- PrimaryButton("Primary")}  
+    PrimaryButton("Primary")
+}  
 ```  
 
 - **group** — название группы (экрана), на котором будет отображаться компонент(опционально).  .
@@ -71,9 +72,9 @@ private fun PrimaryButtonPreview() {
 @Preview  
 @Composable  
 fun UserCardPreview(  
-  @PreviewParameter(UserCardPreviewProvider::class) user: UserCardData  
+    @PreviewParameter(UserCardPreviewProvider::class) user: UserCardData  
 ) {  
- UserCard(user = user)  
+    UserCard(user = user)  
 }  
 ```    
 
@@ -82,12 +83,12 @@ fun UserCardPreview(
 Вызовите инициализацию в вашем `Application` или в `Activity` перед использованием:
 
 ```kotlin  
-	AutoUiKit.init(context)  
+    AutoUiKit.init(context)  
 ```  
 
 Запустите экран с просмотром в отдельном Activity
 ```kotlin
-	AutoUiKit.startPreviewActivity(context)
+    AutoUiKit.startPreviewActivity(context)
 ```
 
 или как отдельный `Composable` экран
