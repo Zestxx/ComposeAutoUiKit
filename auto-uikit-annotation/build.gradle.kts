@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
     `maven-publish`
-    id("com.google.devtools.ksp")
     signing
 }
 
@@ -35,13 +34,13 @@ publishing {
 
         create<MavenPublication>("mavenJava") {
             groupId = libGroupId
-            artifactId = "auto-uikit-processor"
+            artifactId = "auto-uikit-annotation"
             version = releaseVersion
 
             from(components["java"])
 
             pom {
-                name.set("auto-uikit-processor")
+                name.set("auto-uikit-annotation")
                 description.set(pomDescription)
                 url.set(pomUrl)
                 licenses {
@@ -70,11 +69,4 @@ publishing {
             setUrl(layout.buildDirectory.dir("staging-deploy"))
         }
     }
-}
-
-dependencies {
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.1.20-1.0.32")
-    implementation("com.squareup:kotlinpoet-ksp:1.12.0")
-    implementation(project(":auto-uikit-annotation"))
-    api(project(":auto-uikit-core"))
 }

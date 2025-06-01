@@ -1,4 +1,4 @@
-package com.zest.autouikit.processor.annotation
+package com.zest.autouikit.annotation
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)

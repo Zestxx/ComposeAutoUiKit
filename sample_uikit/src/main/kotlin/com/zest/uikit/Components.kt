@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.zest.autouikit.processor.annotation.DesignComponent
+import com.zest.autouikit.annotation.DesignComponent
 import com.zest.uikit.ComponentWithPreviewProvider.MultiTypeCard
 import com.zest.uikit.ComponentWithPreviewProvider.MultiTypeData
 import com.zest.uikit.ComponentWithPreviewProvider.UserCard
@@ -162,4 +162,3 @@ class MultiCardPreviewProvider : PreviewParameterProvider<MultiTypeData> {
         MultiTypeData.SecondType
     )
 }
-
