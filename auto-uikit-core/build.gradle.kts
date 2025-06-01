@@ -3,6 +3,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     kotlin("plugin.serialization")
     `maven-publish`
+    signing
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 repositories {
@@ -15,12 +21,49 @@ publishing {
     publications {
         val releaseVersion: String by project
         val libGroupId: String by project
-        create<MavenPublication>("maven") {
+        val pomUrl: String by project
+        val pomLicenseName: String by project
+        val pomLicenseUrl: String by project
+        val pomDescription: String by project
+        val pomDeveloperName: String by project
+        val pomDeveloperEmail: String by project
+        val pomScmUrl: String by project
+        val pomScmConnection: String by project
+        val pomScmDevConnection: String by project
+
+        create<MavenPublication>("release") {
             groupId = libGroupId
             artifactId = "core"
             version = releaseVersion
-
             from(components["java"])
+
+            pom {
+                name.set("auto-uikit-core")
+                description.set(pomDescription)
+                url.set(pomUrl)
+                licenses {
+                    license {
+                        name.set(pomLicenseName)
+                        url.set(pomLicenseUrl)
+                    }
+                }
+                developers {
+                    developer {
+                        name.set(pomDeveloperName)
+                        email.set(pomDeveloperEmail)
+                    }
+                }
+                scm {
+                    connection.set(pomScmConnection)
+                    developerConnection.set(pomScmDevConnection)
+                    url.set(pomScmUrl)
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            setUrl(layout.buildDirectory.dir("staging-deploy"))
         }
     }
 }
