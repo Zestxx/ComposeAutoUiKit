@@ -75,7 +75,7 @@ publishing {
 
         create<MavenPublication>("release") {
             groupId = libGroupId
-            artifactId = "preview"
+            artifactId = "auto-uikit-preview"
             version = releaseVersion
 
             afterEvaluate { from(components["release"]) }

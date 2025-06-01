@@ -33,7 +33,7 @@ publishing {
 
         create<MavenPublication>("release") {
             groupId = libGroupId
-            artifactId = "core"
+            artifactId = "auto-uikit-core"
             version = releaseVersion
             from(components["java"])
 

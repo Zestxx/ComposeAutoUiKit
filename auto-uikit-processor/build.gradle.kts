@@ -35,7 +35,7 @@ publishing {
 
         create<MavenPublication>("mavenJava") {
             groupId = libGroupId
-            artifactId = "processor"
+            artifactId = "auto-uikit-processor"
             version = releaseVersion
 
             from(components["java"])
