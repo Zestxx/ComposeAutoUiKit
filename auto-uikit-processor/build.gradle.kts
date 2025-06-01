@@ -17,6 +17,7 @@ sourceSets.main {
 java {
     withJavadocJar()
     withSourcesJar()
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
 }
 
 publishing {
