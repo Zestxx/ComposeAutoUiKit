@@ -35,7 +35,7 @@ publishing {
 
         create<MavenPublication>("mavenJava") {
             groupId = libGroupId
-            artifactId = "auto-uikit-annotation"
+            artifactId = project.name
             version = releaseVersion
 
             from(components["java"])

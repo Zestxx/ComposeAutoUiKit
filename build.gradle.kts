@@ -1,7 +1,7 @@
 import org.jreleaser.model.Active
 import org.jreleaser.model.Http
 import org.jreleaser.model.Signing.Mode
-import java.util.Properties
+import org.jreleaser.model.api.deploy.maven.Nexus2MavenDeployer.Stage
 
 plugins {
     kotlin("android") version "2.1.20" apply false
@@ -29,12 +29,9 @@ subprojects {
         val githubToken: String by project
         val releaseVersion: String by project
 
-        val moduleProperties = Properties().apply {
-            this@subprojects.file("publish.properties").reader().use(::load)
-        }
         jreleaser {
             project {
-                name = moduleProperties.getProperty("projectName")
+                name = this@subprojects.name
                 version = releaseVersion
                 authors = listOf("Roman Choryev")
             }
@@ -53,7 +50,7 @@ subprojects {
                 github {
                     token = githubToken
                     enabled = true
-                    skipRelease = false
+                    skipRelease = true
                     skipTag = true
                 }
             }
@@ -61,8 +58,9 @@ subprojects {
             deploy {
                 maven {
                     mavenCentral {
-                        create("app") {
-                            active = Active.ALWAYS
+                        create("releaese") {
+                            setStage(Stage.UPLOAD.name)
+                            active = Active.RELEASE
                             applyMavenCentralRules = false
                             url = "https://central.sonatype.com/api/v1/publisher"
                             username = ossrhUsername
@@ -75,11 +73,26 @@ subprojects {
                             sign = true
                             sourceJar = true
                             javadocJar = true
-                            retryDelay = 60
+                            retryDelay = 10
                         }
                     }
                 }
             }
         }
     }
+}
+
+tasks.register("publishAndDeploy") {
+    group = "publishing"
+    dependsOn(
+        subprojects
+            .filter { it.name.startsWith("auto-uikit") }
+            .map { it.tasks.getByName("publish") }
+    )
+
+    finalizedBy(
+        subprojects
+            .filter { it.name.startsWith("auto-uikit") }
+            .map { it.tasks.getByName("jreleaserDeploy") }
+    )
 }
